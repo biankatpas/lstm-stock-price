@@ -32,17 +32,9 @@ lstm-stock-price/
    cd lstm-stock-price
    ```
 
-2. **Docker**
-
-1. **Build and run with Docker Compose**
+2. **Build and run with Docker Compose**
    ```bash
    docker compose up --build
-   ```
-
-2. **Or build and run with Docker**
-   ```bash
-   docker build -t lstm-stock-price .
-   docker run -p 5000:5000 lstm-stock-price
    ```
 
 3. **Test the containerized API**
