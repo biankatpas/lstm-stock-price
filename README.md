@@ -1,4 +1,4 @@
-# LSTM Stock Price Prediction API
+# LSTM Stock Price
 
 A Flask-based API for stock price prediction using LSTM neural networks with data from Yahoo Finance.
 
