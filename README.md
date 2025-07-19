@@ -10,12 +10,16 @@ lstm-stock-price/
 ├── docker-compose.yml       # Docker Compose setup
 ├── requirements.txt         # Python dependencies
 ├── data/                    # CSV data storage
+├── models/                  # Trained models
 ├── docs/                    # Documentation files
 └── src/                     # Source code
     ├── app.py               # Flask application entry point
-    ├── models/              # ML models
+    ├── lstm/                # LSTM model implementation
     │   ├── __init__.py
-    │   └── lstm_model.py    # LSTM model implementation
+    │   ├── prepare_features.py
+    │   ├── prepare_sequence.py
+    │   ├── evaluate_lstm.py
+    │   └── lstm.py    
     ├── routes/              # API routes
     │   └── __init__.py
     └── scrape/              # Data collection
