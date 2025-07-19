@@ -41,14 +41,14 @@ lstm-stock-price/
       
    **On Windows:**
    ```cmd
-   python -m venv venv
-   venv\Scripts\activate.bat
+   python -m venv .venv
+   .venv\Scripts\activate.bat
    ```
    
    **On macOS/Linux:**
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate
+   python3 -m venv .venv
+   source .venv/bin/activate
    ```
 
 3. **Install dependencies**
