@@ -18,13 +18,51 @@ lstm-stock-price/
     │   └── lstm_model.py    # LSTM model implementation
     ├── routes/              # API routes
     │   └── __init__.py
-    ├── scrape/              # Data collection
-    │   ├── __init__.py
-    │   └── yahoo_finance.py # Yahoo Finance data downloader
-    └── notebooks/           # Jupyter notebooks for analysis
+    └── scrape/              # Data collection
+        ├── __init__.py
+        └── yahoo_finance.py # Yahoo Finance data downloader
 ```
 
 ## Installation & Setup
+
+### Option 1: Local Development with Virtual Environment
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/biankatpas/lstm-stock-price.git
+   cd lstm-stock-price
+   ```
+
+2. **Create and activate Python virtual environment**
+      
+   **On Windows:**
+   ```cmd
+   python -m venv venv
+   venv\Scripts\activate.bat
+   ```
+   
+   **On macOS/Linux:**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Run the Flask application**
+   ```bash
+   python src/app.py
+   ```
+
+5. **Test the API**
+   ```bash
+   curl http://localhost:5000/test
+   ```
+
+### Option 2: Docker Deployment
 
 1. **Clone the repository**
    ```bash
