@@ -1,4 +1,5 @@
 import os
+import warnings
 from typing import List, Optional, Tuple
 
 import joblib
@@ -6,24 +7,29 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
-from tensorflow.keras.layers import LSTM, Dense, Dropout
+from tensorflow.keras.layers import LSTM, Dense, Dropout, Input
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
 
-from .evaluate_lstm import EvaluateLSTM
-from .prepare_features import PrepareFeatures
-from .prepare_sequence import PrepareSequence
+# Suppress TensorFlow warnings
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+tf.get_logger().setLevel("ERROR")
+warnings.filterwarnings("ignore", category=UserWarning)
+
+from evaluate_lstm import EvaluateLSTM
+from prepare_features import PrepareFeatures
+from prepare_sequence import PrepareSequence
 
 
-class LSTM:
+class LSTMStockPrice:
 
     def __init__(self, sequence_length: int = 30, features: List[str] = None):
         self.sequence_length = sequence_length
-        self.features = features
+        self.features_list = features
         self.model = None
         self.is_trained = False
 
-        self.features = PrepareFeatures()
+        self.prepare_features = PrepareFeatures()
         self.sequence = PrepareSequence(sequence_length)
         self.evaluator = EvaluateLSTM()
 
@@ -32,13 +38,15 @@ class LSTM:
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 
         # Prepare features
-        feature_data = self.features.prepare_features(data, self.features)
+        feature_data = self.prepare_features.prepare_features(data, self.features_list)
 
         # Scale data
-        scaled_data = self.features.scale_features(feature_data.values, fit=True)
+        scaled_data = self.prepare_features.scale_features(
+            feature_data.values, fit=True
+        )
 
         # Get target column index
-        target_index = self.features.index(target_column)
+        target_index = self.features_list.index(target_column)
 
         # Create sequences
         return self.sequence.create_train_test_sequences(
@@ -48,7 +56,7 @@ class LSTM:
     def build_model(
         self,
         units: List[int] = None,
-        dropout: float = 0.3,
+        dropout: float = 0.2,
         learning_rate: float = 0.001,
     ) -> Sequential:
         """
@@ -63,23 +71,27 @@ class LSTM:
             Sequential: Compiled Keras model
         """
         if units is None:
-            units = [100, 50]
+            units = [128, 64, 32]
 
-        self.model = Sequential(
-            [
-                LSTM(
-                    units[0],
-                    return_sequences=True,
-                    input_shape=(self.sequence_length, len(self.features)),
-                ),
-                Dropout(dropout),
-                LSTM(units[1], return_sequences=False),
-                Dropout(dropout),
-                Dense(25, activation="relu"),
-                Dropout(dropout / 2),
-                Dense(1),
-            ]
-        )
+        self.model = Sequential()
+
+        # Input layer - use Input() to avoid warning
+        self.model.add(Input(shape=(self.sequence_length, len(self.features_list))))
+
+        # First LSTM layer
+        self.model.add(LSTM(units[0], return_sequences=True))
+        self.model.add(Dropout(dropout))
+
+        # Second LSTM layer
+        self.model.add(LSTM(units[1], return_sequences=False))
+        self.model.add(Dropout(dropout))
+
+        # Dense layers
+        self.model.add(Dense(25, activation="relu"))
+        self.model.add(Dropout(dropout / 2))
+
+        # Output layer
+        self.model.add(Dense(1))
 
         self.model.compile(
             optimizer=Adam(learning_rate=learning_rate), loss="mse", metrics=["mae"]
@@ -160,8 +172,10 @@ class LSTM:
             raise ValueError("Model must be trained before making predictions")
 
         predictions_scaled = self.model.predict(X)
-        target_index = self.features.index("Close")
-        return self.features.inverse_scale_predictions(predictions_scaled, target_index)
+        target_index = self.features_list.index("Close")
+        return self.prepare_features.inverse_scale_predictions(
+            predictions_scaled, target_index
+        )
 
     def evaluate(self, X_test: np.ndarray, y_test: np.ndarray) -> dict:
         """
@@ -175,8 +189,8 @@ class LSTM:
             dict: Evaluation metrics
         """
         predictions = self.predict(X_test)
-        target_index = self.features.index("Close")
-        y_test_actual = self.features.inverse_scale_predictions(
+        target_index = self.features_list.index("Close")
+        y_test_actual = self.prepare_features.inverse_scale_predictions(
             y_test.reshape(-1, 1), target_index
         )
 
@@ -198,7 +212,7 @@ class LSTM:
 
         predictions = []
         current_sequence = last_sequence.copy()
-        target_index = self.features.index("Close")
+        target_index = self.features_list.index("Close")
 
         for _ in range(days):
             # Predict next value
@@ -214,13 +228,13 @@ class LSTM:
             # Slide window
             current_sequence = np.vstack([current_sequence[1:], new_row])
 
-        return self.features.inverse_scale_predictions(
+        return self.prepare_features.inverse_scale_predictions(
             np.array(predictions).reshape(-1, 1), target_index
         )
 
     def save_model(
         self,
-        model_path: str = "models/lstm_model.h5",
+        model_path: str = "models/lstm_model.keras",
         scaler_path: str = "models/scaler.pkl",
     ):
         """
@@ -239,14 +253,14 @@ class LSTM:
 
         # Save model and scaler
         self.model.save(model_path)
-        joblib.dump(self.features.scaler, scaler_path)
+        joblib.dump(self.prepare_features.scaler, scaler_path)
 
         print(f"Model saved to {model_path}")
         print(f"Scaler saved to {scaler_path}")
 
     def load_model(
         self,
-        model_path: str = "models/lstm_model.h5",
+        model_path: str = "models/lstm_model.keras",
         scaler_path: str = "models/scaler.pkl",
     ):
         """
@@ -258,8 +272,8 @@ class LSTM:
         """
         if os.path.exists(model_path) and os.path.exists(scaler_path):
             self.model = tf.keras.models.load_model(model_path)
-            self.features.scaler = joblib.load(scaler_path)
-            self.features.is_fitted = True
+            self.prepare_features.scaler = joblib.load(scaler_path)
+            self.prepare_features.is_fitted = True
             self.is_trained = True
 
             print(f"Model loaded from {model_path}")
@@ -274,14 +288,26 @@ if __name__ == "__main__":
         print("Starting LSTM Training")
 
         print("Loading data...")
-        df = pd.read_csv("../../data/AAPL_2018-01-01_to_2025-07-01.csv")
-        df["Date"] = pd.to_datetime(df["Date"])
+        df = pd.read_csv("data/AAPL_2018-01-01_to_2025-07-01.csv")
+        df["Date"] = pd.to_datetime(df["Date"], utc=True)
         df.set_index("Date", inplace=True)
 
-        features = ["Close", "Volume", "MA_7", "MA_21", "RSI", "Volatility"]
+        features = [
+            "Close",
+            "Volume",
+            "Open",
+            "High",
+            "Low",
+            "MA_7",
+            "MA_21",
+            "MA_50",
+            "RSI",
+            "Volatility",
+            "Returns",
+        ]
 
         print("Initializing LSTM model...")
-        model = LSTM(sequence_length=60, features=features)
+        model = LSTMStockPrice(sequence_length=90, features=features)
 
         print("Preparing data...")
         X_train, X_test, y_train, y_test = model.prepare_data(df, test_size=0.3)
@@ -290,11 +316,11 @@ if __name__ == "__main__":
         print(f"Test samples: {len(X_test)}")
 
         print("Training model...")
-        history = model.train(X_train, y_train, epochs=50, verbose=1)
+        model.train(X_train, y_train, epochs=50, verbose=1)
 
         print("Evaluating model...")
         metrics = model.evaluate(X_test, y_test)
-        model.model_evaluator.print_evaluation_report(metrics)
+        model.evaluator.print_evaluation_report(metrics)
 
         print("Saving model...")
         model.save_model()
