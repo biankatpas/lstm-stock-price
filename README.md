@@ -19,7 +19,7 @@ lstm-stock-price/
     │   ├── prepare_features.py
     │   ├── prepare_sequence.py
     │   ├── evaluate_lstm.py
-    │   └── lstm.py    
+    │   └── lstm_stock_price.py    
     ├── routes/              # API routes
     │   └── __init__.py
     └── scrape/              # Data collection
