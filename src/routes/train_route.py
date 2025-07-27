@@ -8,9 +8,8 @@ import pandas as pd
 from flask import Blueprint, jsonify, request
 
 from lstm.lstm_stock_price import LSTMStockPrice
-
-from .mock_payload import get_train_mock_payload
-from .training_status import training_status
+from mocks.mock_payload import get_train_mock_payload
+from utils.training_status import training_status
 
 # Create blueprint
 train_bp = Blueprint("train", __name__)
@@ -216,6 +215,9 @@ def start_training():
                 "status": "started",
                 "parameters": params,
                 "estimated_duration": "5-15 minutes",
+                "using_mock_payload": not bool(
+                    request.get_json(force=True, silent=True)
+                ),
             }
         ),
         202,

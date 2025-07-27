@@ -19,7 +19,6 @@ os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 import mlflow
 import mlflow.pytorch
 from mlflow.models.signature import infer_signature
-from mlflow.tracking import MlflowClient
 
 # Suppress warnings
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -136,34 +135,7 @@ class LSTMStockPrice(nn.Module):
             # Target: next value of target column
             y.append(data[i, target_column_index])
 
-        return np.array(X), np.array(y)
-
-    def _split_sequences(
-        self, X: np.ndarray, y: np.ndarray, test_size: float = 0.3
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Split sequences into train and test sets
-
-        Args:
-            X: Feature sequences
-            y: Target sequences
-            test_size: Proportion of data for testing
-
-        Returns:
-            Tuple of (X_train, X_test, y_train, y_test)
-        """
-        if not 0 < test_size < 1:
-            raise ValueError("Test size must be between 0 and 1")
-
-        # Use temporal split (no shuffling for time series)
-        split_index = int(len(X) * (1 - test_size))
-
-        X_train = X[:split_index]
-        X_test = X[split_index:]
-        y_train = y[:split_index]
-        y_test = y[split_index:]
-
-        return X_train, X_test, y_train, y_test
+        return np.array(X, dtype=np.float32), np.array(y, dtype=np.float32)
 
     def prepare_data(
         self,
@@ -278,9 +250,13 @@ class LSTMStockPrice(nn.Module):
                 }
             )
 
-            # Convert to tensors
-            X_train_tensor = torch.FloatTensor(X_train).to(self.device)
-            y_train_tensor = torch.FloatTensor(y_train).to(self.device)
+            # Convert to tensors with explicit float32
+            X_train_tensor = torch.FloatTensor(X_train.astype(np.float32)).to(
+                self.device
+            )
+            y_train_tensor = torch.FloatTensor(y_train.astype(np.float32)).to(
+                self.device
+            )
 
             # Create DataLoader
             train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
@@ -290,8 +266,12 @@ class LSTMStockPrice(nn.Module):
 
             # Validation data if provided
             if X_val is not None and y_val is not None:
-                X_val_tensor = torch.FloatTensor(X_val).to(self.device)
-                y_val_tensor = torch.FloatTensor(y_val).to(self.device)
+                X_val_tensor = torch.FloatTensor(X_val.astype(np.float32)).to(
+                    self.device
+                )
+                y_val_tensor = torch.FloatTensor(y_val.astype(np.float32)).to(
+                    self.device
+                )
 
             # Training loop
             history = {"loss": [], "val_loss": []}
@@ -367,7 +347,7 @@ class LSTMStockPrice(nn.Module):
             mlflow.log_metrics(final_metrics)
 
             # Create input example for model signature
-            input_example = X_train[:1]
+            input_example = X_train[:1].astype(np.float32)
 
             # Create model signature by making a prediction
             self.eval()
@@ -381,7 +361,7 @@ class LSTMStockPrice(nn.Module):
             # Log model with signature and input example
             mlflow.pytorch.log_model(
                 pytorch_model=self,
-                artifact_path="model",
+                name="model",
                 signature=signature,
                 input_example=input_example,
             )
@@ -396,7 +376,9 @@ class LSTMStockPrice(nn.Module):
 
         self.eval()
         with torch.no_grad():
-            X_tensor = torch.FloatTensor(X).to(self.device)
+            # Ensure input is float32 for consistency
+            X_float32 = X.astype(np.float32)
+            X_tensor = torch.FloatTensor(X_float32).to(self.device)
             predictions_scaled = self(X_tensor).cpu().numpy()
 
         # Inverse transform predictions to original scale
@@ -440,50 +422,6 @@ class LSTMStockPrice(nn.Module):
             "mape": float(mape),
         }
 
-    def _print_evaluation_report(
-        self, metrics: Dict[str, float], title: str = "Model Evaluation"
-    ):
-        """Print evaluation report with performance interpretation"""
-        print(f"\n{'='*50}")
-        print(f"{title:^50}")
-        print(f"{'='*50}")
-
-        print(f"RMSE:       {metrics.get('rmse', 0):.4f}")
-        print(f"MAE:        {metrics.get('mae', 0):.4f}")
-        print(f"R^2 Score:   {metrics.get('r2', 0):.4f}")
-        print(f"MAPE:       {metrics.get('mape', 0):.2f}%")
-        print(f"MSE:        {metrics.get('mse', 0):.4f}")
-
-        # Performance interpretation
-        r2 = metrics.get("r2", 0)
-        if r2 >= 0.8:
-            performance = "Excellent"
-        elif r2 >= 0.6:
-            performance = "Good"
-        elif r2 >= 0.4:
-            performance = "Fair"
-        else:
-            performance = "Poor"
-
-        print(f"Performance: {performance} (R^2 = {r2:.4f})")
-        print(f"{'='*50}\n")
-
-    def _log_training_metrics(
-        self,
-        y_true: np.ndarray,
-        y_pred: np.ndarray,
-        prefix: str = "train",
-        step: int = None,
-    ):
-        """Log training metrics to MLflow"""
-        if mlflow.active_run():
-            metrics = self._calculate_metrics(y_true, y_pred)
-            mlflow_metrics = {f"{prefix}_{k}": v for k, v in metrics.items()}
-            if step is not None:
-                mlflow.log_metrics(mlflow_metrics, step=step)
-            else:
-                mlflow.log_metrics(mlflow_metrics)
-
     def evaluate(self, X_test: np.ndarray, y_test: np.ndarray) -> dict:
         """Evaluate model performance on test data"""
         predictions = self.predict(X_test)
@@ -508,13 +446,13 @@ class LSTMStockPrice(nn.Module):
             raise ValueError("Model must be trained before making predictions")
 
         predictions = []
-        current_sequence = last_sequence.copy()
+        current_sequence = last_sequence.copy().astype(np.float32)
         target_index = self.features_list.index("Close")
 
         self.eval()
         with torch.no_grad():
             for _ in range(days):
-                # Convert to tensor
+                # Convert to tensor with explicit float32
                 sequence_tensor = (
                     torch.FloatTensor(current_sequence).unsqueeze(0).to(self.device)
                 )

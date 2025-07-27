@@ -2,9 +2,8 @@ import os
 
 from flask import Blueprint, jsonify, request
 
+from mocks.mock_payload import get_scrape_mock_payload
 from scrape.yahoo_finance import YahooFinanceDownloader
-
-from .mock_payload import get_scrape_mock_payload
 
 # Create blueprint
 scrape_bp = Blueprint("scrape", __name__)
@@ -115,6 +114,9 @@ def download_stock_data():
                         "last_date": str(df.index[-1].date()),
                     },
                     "columns": list(df.columns),
+                    "using_mock_payload": not bool(
+                        request.get_json(force=True, silent=True)
+                    ),
                 }
             ),
             200,

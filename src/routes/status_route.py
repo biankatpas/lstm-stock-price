@@ -4,7 +4,7 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify
 
-from .training_status import training_status
+from utils.training_status import training_status
 
 # Create blueprint
 status_bp = Blueprint("status", __name__)

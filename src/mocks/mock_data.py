@@ -1,5 +1,5 @@
 """
-Mock data generator for testing predict routes
+Mock data for testing predict routes
 """
 
 

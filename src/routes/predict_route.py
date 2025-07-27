@@ -5,9 +5,8 @@ import pandas as pd
 from flask import Blueprint, jsonify, request
 
 from lstm.lstm_stock_price import LSTMStockPrice
-
-from .mock_data import generate_mock_stock_data
-from .mock_payload import get_predict_future_mock_payload
+from mocks.mock_data import generate_mock_stock_data
+from mocks.mock_payload import get_predict_future_mock_payload
 
 # Create blueprint
 predict_bp = Blueprint("predict", __name__)

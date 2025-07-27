@@ -41,7 +41,7 @@ lstm-stock-price/
 
 2. **Build and run with Docker Compose**
    ```bash
-   docker-compose up --build
+   docker compose up
    ```
 
 3. **Test the containerized API**
