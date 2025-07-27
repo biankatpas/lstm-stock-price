@@ -1,6 +1,10 @@
 from flask import Flask
 
 from routes import health_bp, predict_bp, scrape_bp, status_bp, train_bp
+from utils.logger_config import setup_logging
+
+# Setup centralized logging
+setup_logging(level="INFO")
 
 app = Flask(__name__)
 

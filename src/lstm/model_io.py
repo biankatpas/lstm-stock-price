@@ -8,6 +8,11 @@ from typing import Any, Dict
 import joblib
 import torch
 import torch.nn as nn
+
+from utils.logger_config import get_logger
+
+# Get logger
+logger = get_logger(__name__)
 from sklearn.preprocessing import MinMaxScaler
 
 
@@ -55,8 +60,8 @@ class ModelIO:
         # Save scaler
         joblib.dump(scaler, scaler_path)
 
-        print(f"Model saved to {model_path}")
-        print(f"Scaler saved to {scaler_path}")
+        logger.info(f"Model saved to {model_path}")
+        logger.info(f"Scaler saved to {scaler_path}")
 
     @staticmethod
     def load_model_checkpoint(

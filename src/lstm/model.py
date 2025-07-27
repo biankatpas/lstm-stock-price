@@ -13,6 +13,11 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 
+from utils.logger_config import get_logger
+
+# Get logger
+logger = get_logger(__name__)
+
 from .data_processor import DataProcessor
 from .metrics import MetricsCalculator
 from .mlflow_manager import MLflowManager
@@ -199,11 +204,11 @@ class LSTMStockPrice(nn.Module):
                 # Logging
                 if verbose and (epoch + 1) % 10 == 0:
                     if X_val is not None:
-                        print(
+                        logger.info(
                             f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.6f}, Val Loss: {val_loss:.6f}"
                         )
                     else:
-                        print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.6f}")
+                        logger.info(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.6f}")
 
                 # Log metrics every 10 epochs
                 if (epoch + 1) % 10 == 0:
@@ -222,7 +227,7 @@ class LSTMStockPrice(nn.Module):
                     else:
                         patience_counter += 1
                         if patience_counter >= patience:
-                            print(f"Early stopping at epoch {epoch+1}")
+                            logger.info(f"Early stopping at epoch {epoch+1}")
                             # Restore best model
                             self.load_state_dict(self.best_model_state)
                             break
@@ -356,9 +361,9 @@ class LSTMStockPrice(nn.Module):
         self.data_processor.scaler_fitted = True
         self.is_trained = True
 
-        print(f"Model loaded from {model_path}")
-        print(f"Scaler loaded from {scaler_path}")
-        print(
+        logger.info(f"Model loaded from {model_path}")
+        logger.info(f"Scaler loaded from {scaler_path}")
+        logger.info(
             f"Model architecture: hidden_sizes={self.hidden_sizes}, sequence_length={self.sequence_length}"
         )
 

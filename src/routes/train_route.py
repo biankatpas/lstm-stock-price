@@ -9,7 +9,11 @@ from flask import Blueprint, jsonify, request
 
 from lstm.model import LSTMStockPrice
 from mocks.mock_payload import get_train_mock_payload
+from utils.logger_config import get_logger
 from utils.training_status import training_status
+
+# Get logger
+logger = get_logger(__name__)
 
 # Create blueprint
 train_bp = Blueprint("train", __name__)
@@ -21,16 +25,16 @@ def background_training(task_id, params):
     try:
         training_status.mark_running()
 
-        print(f"[{task_id}] Starting LSTM training with params: {params}")
+        logger.info(f"[{task_id}] Starting LSTM training with params: {params}")
 
         # Load data
-        print(f"[{task_id}] Loading data...")
+        logger.info(f"[{task_id}] Loading data...")
 
         # Get filepath from parameters (from payload or mock data)
         filepath = params.get("filepath", "data/AAPL_2018-01-01_to_2025-07-01.csv")
 
         try:
-            print(f"[{task_id}] Loading data from: {filepath}")
+            logger.info(f"[{task_id}] Loading data from: {filepath}")
             df = pd.read_csv(filepath)
             df["Date"] = pd.to_datetime(df["Date"], utc=True)
             df.set_index("Date", inplace=True)
@@ -40,7 +44,7 @@ def background_training(task_id, params):
             raise Exception(f"Error loading data from {filepath}: {str(e)}")
 
         # Initialize LSTM model with parameters
-        print(f"[{task_id}] Initializing LSTM model...")
+        logger.info(f"[{task_id}] Initializing LSTM model...")
         model = LSTMStockPrice(
             sequence_length=params.get("sequence_length", 90),
             hidden_sizes=params.get("hidden_sizes", [128, 64]),
@@ -48,18 +52,18 @@ def background_training(task_id, params):
         )
 
         # Prepare data with parameters
-        print(f"[{task_id}] Preparing data...")
+        logger.info(f"[{task_id}] Preparing data...")
         X_train, X_val, X_test, y_train, y_val, y_test = model.prepare_data(
             df,
             val_size=params.get("val_size", 0.2),
         )
 
-        print(f"[{task_id}] Training samples: {len(X_train)}")
-        print(f"[{task_id}] Validation samples: {len(X_val)}")
-        print(f"[{task_id}] Test samples: {len(X_test)}")
+        logger.info(f"[{task_id}] Training samples: {len(X_train)}")
+        logger.info(f"[{task_id}] Validation samples: {len(X_val)}")
+        logger.info(f"[{task_id}] Test samples: {len(X_test)}")
 
         # Train model with parameters
-        print(f"[{task_id}] Training model...")
+        logger.info(f"[{task_id}] Training model...")
         model.train_model(
             X_train,
             y_train,
@@ -72,11 +76,11 @@ def background_training(task_id, params):
         )
 
         # Evaluate model
-        print(f"[{task_id}] Evaluating model...")
+        logger.info(f"[{task_id}] Evaluating model...")
         results = model.evaluate(X_test, y_test)
 
         # Save model
-        print(f"[{task_id}] Saving model...")
+        logger.info(f"[{task_id}] Saving model...")
         model.save_model()
 
         # Mark training as completed with results
@@ -89,12 +93,12 @@ def background_training(task_id, params):
         }
         training_status.mark_completed(results_data)
 
-        print(f"[{task_id}] Training completed successfully")
+        logger.info(f"[{task_id}] Training completed successfully")
 
     except Exception as e:
         # Mark training as failed
         training_status.mark_failed(str(e))
-        print(f"[{task_id}] Training failed: {str(e)}")
+        logger.error(f"[{task_id}] Training failed: {str(e)}")
 
 
 @train_bp.route("/train", methods=["POST"])
@@ -146,10 +150,10 @@ def start_training():
         # Use mock payload if no data provided for testing purposes
         if not data:
             data = get_train_mock_payload()
-            print(f"Using mock payload for testing: {data}")
+            logger.debug(f"Using mock payload for testing: {data}")
     except:
         data = get_train_mock_payload()
-        print(f"Using mock payload for testing: {data}")
+        logger.debug(f"Using mock payload for testing: {data}")
 
     # Validate and set parameters with defaults
     try:

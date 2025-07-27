@@ -3,6 +3,11 @@ import os
 import pandas as pd
 import yfinance as yf
 
+from utils.logger_config import get_logger
+
+# Get logger
+logger = get_logger(__name__)
+
 
 class YahooFinanceDownloader:
 
@@ -45,12 +50,12 @@ class YahooFinanceDownloader:
             filepath = os.path.join(output_dir, filename)
             data.to_csv(filepath)
 
-            print(f"Data for {symbol} saved to {filepath}")
-            print(f"Data shape: {data.shape}")
-            print(f"Date range: {data.index[0]} to {data.index[-1]}")
+            logger.info(f"Data for {symbol} saved to {filepath}")
+            logger.info(f"Data shape: {data.shape}")
+            logger.info(f"Date range: {data.index[0]} to {data.index[-1]}")
 
             return data
 
         except Exception as e:
-            print(f"Error downloading data for {symbol}: {str(e)}")
+            logger.error(f"Error downloading data for {symbol}: {str(e)}")
             return None

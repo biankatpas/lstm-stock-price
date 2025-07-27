@@ -7,6 +7,10 @@ from flask import Blueprint, jsonify, request
 from lstm.model import LSTMStockPrice
 from mocks.mock_data import generate_mock_stock_data
 from mocks.mock_payload import get_predict_future_mock_payload
+from utils.logger_config import get_logger
+
+# Get logger
+logger = get_logger(__name__)
 
 # Create blueprint
 predict_bp = Blueprint("predict", __name__)
@@ -80,7 +84,7 @@ def predict_stock_price():
         # Use mock data if no data provided for testing purposes
         if not data or "data" not in data:
             input_data = generate_mock_stock_data(90)
-            print("Using mock data for testing (90 data points)")
+            logger.debug("Using mock data for testing (90 data points)")
         else:
             input_data = data["data"]
         if not isinstance(input_data, list):
@@ -200,12 +204,12 @@ def predict_future_prices():
             if not data:
                 mock_payload = get_predict_future_mock_payload()
                 days = mock_payload["days"]
-                print(
+                logger.debug(
                     f"Using full mock payload for testing (90 data points, predicting {days} days)"
                 )
             else:
                 days = data.get("days", 7)  # Default to 7 days for testing
-                print(
+                logger.debug(
                     f"Using mock data for testing (90 data points, predicting {days} days)"
                 )
         else:

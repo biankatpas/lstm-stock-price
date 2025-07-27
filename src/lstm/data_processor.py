@@ -9,6 +9,11 @@ import pandas as pd
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.preprocessing import MinMaxScaler
 
+from utils.logger_config import get_logger
+
+# Get logger
+logger = get_logger(__name__)
+
 
 class DataProcessor:
     """Handles data preprocessing and sequence creation for LSTM models"""
@@ -102,10 +107,10 @@ class DataProcessor:
         X_test = X[test_idx]
         y_test = y[test_idx]
 
-        print("Split method: TimeSeriesSplit")
-        print(f"Train: {len(X_train)} samples")
-        print(f"Validation: {len(X_val)} samples")
-        print(f"Test: {len(X_test)} samples")
+        logger.info("Split method: TimeSeriesSplit")
+        logger.info(f"Train: {len(X_train)} samples")
+        logger.info(f"Validation: {len(X_val)} samples")
+        logger.info(f"Test: {len(X_test)} samples")
 
         return X_train, X_val, X_test, y_train, y_val, y_test
 

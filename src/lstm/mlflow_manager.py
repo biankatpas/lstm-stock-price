@@ -9,6 +9,11 @@ import mlflow
 import mlflow.pytorch
 from mlflow.models.signature import infer_signature
 
+from utils.logger_config import get_logger
+
+# Get logger
+logger = get_logger(__name__)
+
 # Silence Git warnings from MLflow
 os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 
@@ -28,7 +33,7 @@ class MLflowManager:
                 mlflow.create_experiment(self.experiment_name)
             mlflow.set_experiment(self.experiment_name)
         except Exception as e:
-            print(f"MLflow setup warning: {e}")
+            logger.warning(f"MLflow setup warning: {e}")
 
     def log_params(self, params: Dict[str, Any]):
         """Log parameters to MLflow"""

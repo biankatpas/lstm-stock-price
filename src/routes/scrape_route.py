@@ -4,6 +4,10 @@ from flask import Blueprint, jsonify, request
 
 from mocks.mock_payload import get_scrape_mock_payload
 from scrape.yahoo_finance import YahooFinanceDownloader
+from utils.logger_config import get_logger
+
+# Get logger
+logger = get_logger(__name__)
 
 # Create blueprint
 scrape_bp = Blueprint("scrape", __name__)
@@ -36,7 +40,7 @@ def download_stock_data():
     # Use mock payload if no data provided for testing purposes
     if not data:
         data = get_scrape_mock_payload()
-        print(f"Using mock payload for testing: {data}")
+        logger.debug(f"Using mock payload for testing: {data}")
 
     # Validate required parameters
     symbol = data.get("symbol")
