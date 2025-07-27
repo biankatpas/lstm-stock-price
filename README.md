@@ -1,6 +1,15 @@
 # LSTM Stock Price
 
-A Flask-based API for stock price prediction using LSTM neural networks with data from Yahoo Finance.
+A Flask-based API for stock price prediction using LSTM neural networks with real-time data from Yahoo Finance. This API provides a complete pipeline with data collection, model training, evaluation, and prediction capabilities.
+
+## Key Features
+
+- **📈 Data Collection**: Stock data scraping from Yahoo Finance
+- **🧠 LSTM Neural Networks**: Uses LSTM model for time series prediction
+- **🔄 Asynchronous Training**: Background model training
+- **🎯 Prediction**: Single price prediction and multi-day future forecasting
+- **🧪 Mock Data Support**: Built-in test data for easy API testing
+- **🐳 Docker Ready**: Containerized deployment with Docker Compose
 
 ## Project Structure
 
