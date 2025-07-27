@@ -1,42 +1,42 @@
 @echo off
-echo Deploy direto do container para AWS Lab
+echo Direct container deploy to AWS Lab
 
-REM Carregar credenciais do .env se existir
+REM Load credentials from .env if it exists
 if exist .env (
-    echo Carregando credenciais...
+    echo Loading credentials...
     for /f "usebackq tokens=1,2 delims==" %%a in (.env) do (
         if not "%%a"=="" if not "%%a:~0,1%"=="#" set %%a=%%b
     )
 )
 
-REM Verificar credenciais
+REM Check credentials
 if "%AWS_ACCESS_KEY_ID%"=="" (
-    echo Configure suas credenciais no arquivo .env primeiro!
+    echo Configure your credentials in .env file first!
     echo cp .env.example .env
-    echo # Depois edite .env com suas credenciais do AWS Lab
+    echo # Then edit .env with your AWS Lab credentials
     exit /b 1
 )
 
-echo Credenciais AWS carregadas
+echo AWS credentials loaded
 
-REM Criar contexto ECS
-echo Configurando contexto AWS ECS...
-docker context create ecs aws-lab --from-env 2>nul || echo Contexto ECS ja existe
+REM Create ECS context
+echo Setting up AWS ECS context...
+docker context create ecs aws-lab --from-env 2>nul || echo ECS context already exists
 
-REM Usar contexto ECS
-echo Mudando para contexto AWS...
+REM Use ECS context
+echo Switching to AWS context...
 docker context use aws-lab
 
 REM Deploy
-echo Fazendo deploy do container...
-echo Isso pode levar alguns minutos...
+echo Deploying container...
+echo This may take a few minutes...
 docker compose up --detach
 
 echo.
-echo Deploy concluido!
+echo Deploy completed!
 echo.
-echo Sua API estara disponivel no endereco mostrado acima
-echo Teste com: curl https://seu-endpoint/health
+echo Your API will be available at the address shown above
+echo Test with: curl https://your-endpoint/health
 echo.
-echo Para limpar: docker compose down
-echo Para voltar ao local: docker context use default
+echo To clean up: docker compose down
+echo To return to local: docker context use default

@@ -1,18 +1,18 @@
-# LSTM Stock Price API - Deploy Direto para AWS Lab
+# LSTM Stock Price API - Deploy to AWS Lab
 
-## 📋 O que você precisa:
-1. **Docker** rodando local
+## 📋 What you need:
+1. **Docker** running locally
 2. **AWS Lab** credentials
 
-## 🚀 Deploy em 3 passos:
+## 🚀 Deploy in 3 steps:
 
-### 1. Configure credenciais
+### 1. Configure credentials
 ```bash
 cp .env.example .env
-# Edite .env com suas credenciais do AWS Lab
+# Edit .env with your AWS Lab credentials
 ```
 
-### 2. Deploy direto
+### 2. Direct deploy
 ```bash
 # Linux/Mac
 ./deploy.sh
@@ -21,13 +21,13 @@ cp .env.example .env
 deploy.bat
 ```
 
-### 3. Use sua API
-O script mostrará o endpoint da sua API. Teste:
+### 3. Use your API
+The script will show your API endpoint. Test it:
 ```bash
-curl https://seu-endpoint/health
+curl https://your-endpoint/health
 ```
 
-## 🗑️ Limpar depois
+## 🗑️ Clean up afterwards
 ```bash
 docker compose down
 docker context use default

@@ -1,44 +1,44 @@
 #!/bin/bash
-# Deploy direto do container para AWS Lab - Forma mais simples
+# Direct container deploy to AWS Lab - Simplest way
 
 set -e
 
-echo "🚀 Deploy direto do container para AWS Lab"
+echo "🚀 Direct container deploy to AWS Lab"
 
-# Carregar credenciais do .env
+# Load credentials from .env
 if [ -f ".env" ]; then
-    echo "📋 Carregando credenciais..."
+    echo "📋 Loading credentials..."
     export $(grep -v '^#' .env | xargs)
 fi
 
-# Verificar credenciais
+# Check credentials
 if [ -z "$AWS_ACCESS_KEY_ID" ]; then
-    echo "❌ Configure suas credenciais no arquivo .env primeiro!"
+    echo "❌ Configure your credentials in .env file first!"
     echo "cp .env.example .env"
-    echo "# Depois edite .env com suas credenciais do AWS Lab"
+    echo "# Then edit .env with your AWS Lab credentials"
     exit 1
 fi
 
-echo "✅ Credenciais AWS carregadas"
+echo "✅ AWS credentials loaded"
 
-# Criar contexto ECS se não existir
-echo "📋 Configurando contexto AWS ECS..."
-docker context create ecs aws-lab --from-env 2>/dev/null || echo "Contexto ECS já existe"
+# Create ECS context if it doesn't exist
+echo "📋 Setting up AWS ECS context..."
+docker context create ecs aws-lab --from-env 2>/dev/null || echo "ECS context already exists"
 
-# Usar contexto ECS
-echo "🔄 Mudando para contexto AWS..."
+# Use ECS context
+echo "🔄 Switching to AWS context..."
 docker context use aws-lab
 
-# Deploy direto do docker-compose
-echo "🚀 Fazendo deploy do container..."
-echo "Isso pode levar alguns minutos..."
+# Direct docker-compose deploy
+echo "🚀 Deploying container..."
+echo "This may take a few minutes..."
 docker compose up --detach
 
 echo ""
-echo "✅ Deploy concluído!"
+echo "✅ Deploy completed!"
 echo ""
-echo "📍 Sua API estará disponível no endereço mostrado acima"
-echo "🧪 Teste com: curl https://seu-endpoint/health"
+echo "📍 Your API will be available at the address shown above"
+echo "🧪 Test with: curl https://your-endpoint/health"
 echo ""
-echo "🗑️  Para limpar: docker compose down"
-echo "🔄 Para voltar ao local: docker context use default"
+echo "🗑️  To clean up: docker compose down"
+echo "🔄 To return to local: docker context use default"
