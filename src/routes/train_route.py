@@ -25,17 +25,19 @@ def background_training(task_id, params):
 
         # Load data
         print(f"[{task_id}] Loading data...")
+
+        # Get filepath from parameters (from payload or mock data)
+        filepath = params.get("filepath", "data/AAPL_2018-01-01_to_2025-07-01.csv")
+
         try:
-            # TODO: replace with filepath provided in request
-            df = pd.read_csv("data/AAPL_2018-01-01_to_2025-07-01.csv")
+            print(f"[{task_id}] Loading data from: {filepath}")
+            df = pd.read_csv(filepath)
             df["Date"] = pd.to_datetime(df["Date"], utc=True)
             df.set_index("Date", inplace=True)
         except FileNotFoundError:
-            raise Exception(
-                "Data file not found: data/AAPL_2018-01-01_to_2025-07-01.csv"
-            )
+            raise Exception(f"Data file not found: {filepath}")
         except Exception as e:
-            raise Exception(f"Error loading data: {str(e)}")
+            raise Exception(f"Error loading data from {filepath}: {str(e)}")
 
         # Initialize LSTM model with parameters
         print(f"[{task_id}] Initializing LSTM model...")
@@ -103,12 +105,12 @@ def start_training():
     JSON Parameters (all optional):
     - epochs: int (default: 50) - Number of training epochs
     - sequence_length: int (default: 90) - Length of input sequences
-    - test_size: float (default: 0.3) - Proportion of data for testing (0-1)
     - val_size: float (default: 0.2) - Proportion of remaining data for validation (0-1)
     - batch_size: int (default: 32) - Training batch size
     - learning_rate: float (default: 0.001) - Learning rate for optimizer
     - hidden_sizes: list (default: [128, 64]) - Hidden layer sizes for LSTM
     - dropout: float (default: 0.2) - Dropout rate (0-1)
+    - filepath: str (default: "data/AAPL_2018-01-01_to_2025-07-01.csv") - Path to CSV data file
 
     Example request:
     {
@@ -117,7 +119,8 @@ def start_training():
         "batch_size": 64,
         "learning_rate": 0.001,
         "hidden_sizes": [256, 128],
-        "dropout": 0.3
+        "dropout": 0.3,
+        "filepath": "data/GOOGL_2018-01-01_to_2025-07-01.csv"
     }
     """
 
@@ -153,7 +156,6 @@ def start_training():
         params = {
             "epochs": max(1, int(data.get("epochs", 50))),
             "sequence_length": max(10, int(data.get("sequence_length", 90))),
-            "test_size": max(0.1, min(0.5, float(data.get("test_size", 0.3)))),
             "val_size": max(0.1, min(0.5, float(data.get("val_size", 0.2)))),
             "batch_size": max(1, int(data.get("batch_size", 32))),
             "learning_rate": max(
@@ -161,6 +163,7 @@ def start_training():
             ),
             "hidden_sizes": data.get("hidden_sizes", [128, 64]),
             "dropout": max(0.0, min(0.8, float(data.get("dropout", 0.2)))),
+            "filepath": data.get("filepath", "data/AAPL_2018-01-01_to_2025-07-01.csv"),
         }
 
         # Validate hidden_sizes
@@ -182,12 +185,12 @@ def start_training():
                     "valid_ranges": {
                         "epochs": "positive integer",
                         "sequence_length": "integer >= 10",
-                        "test_size": "float between 0.1 and 0.5",
                         "val_size": "float between 0.1 and 0.5",
                         "batch_size": "positive integer",
                         "learning_rate": "float between 0.00001 and 0.1",
                         "hidden_sizes": "list of positive integers",
                         "dropout": "float between 0.0 and 0.8",
+                        "filepath": "string path to CSV file",
                     },
                 }
             ),

@@ -28,8 +28,22 @@ def _load_model():
                 "Trained model not found. Please train the model first."
             )
 
-        # Initialize model and load weights
-        _model = LSTMStockPrice()
+        # Load checkpoint to get the correct model parameters
+        import torch
+
+        checkpoint = torch.load(model_path, map_location=torch.device("cpu"))
+
+        # Extract model parameters from checkpoint
+        saved_sequence_length = checkpoint.get("sequence_length", 90)
+        saved_hidden_sizes = checkpoint.get("hidden_sizes", [128, 64])
+
+        # Initialize model with the same architecture as saved model
+        _model = LSTMStockPrice(
+            sequence_length=saved_sequence_length,
+            hidden_sizes=saved_hidden_sizes,
+            dropout=0.2,
+        )
+
         _model.load_model(model_path, scaler_path)
 
     return _model

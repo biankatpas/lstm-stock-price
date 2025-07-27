@@ -339,15 +339,14 @@ class LSTMStockPrice(nn.Module):
         # Load model checkpoint
         checkpoint = self.model_io.load_model_checkpoint(model_path, self.device)
 
-        # Set model attributes
+        # Set model attributes from checkpoint
         self.features_list = checkpoint["features_list"]
         self.sequence_length = checkpoint["sequence_length"]
         self.hidden_sizes = checkpoint["hidden_sizes"]
 
-        # Rebuild the network layers if not already built
-        if not hasattr(self, "lstm1"):
-            self._build_network(dropout=0.2)
-            self.to(self.device)
+        # Rebuild the network layers
+        self._build_network(dropout=0.2)
+        self.to(self.device)
 
         # Load model state
         self.load_state_dict(checkpoint["model_state_dict"])
@@ -359,6 +358,9 @@ class LSTMStockPrice(nn.Module):
 
         print(f"Model loaded from {model_path}")
         print(f"Scaler loaded from {scaler_path}")
+        print(
+            f"Model architecture: hidden_sizes={self.hidden_sizes}, sequence_length={self.sequence_length}"
+        )
 
     @property
     def scaler(self):

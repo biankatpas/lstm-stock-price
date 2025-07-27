@@ -32,8 +32,8 @@ def get_train_mock_payload():
         "learning_rate": 0.001,
         "hidden_sizes": [128, 64],
         "dropout": 0.2,
-        "test_size": 0.3,
         "val_size": 0.2,
+        "filepath": "data/AAPL_2018-01-01_to_2025-07-01.csv",
     }
 
 

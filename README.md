@@ -116,6 +116,7 @@ A complete Postman collection is available in the `docs/` folder for easy API te
     - `learning_rate` (default: 0.001): Learning rate for optimizer
     - `hidden_sizes` (default: [128, 64]): Hidden layer sizes for LSTM
     - `dropout` (default: 0.2): Dropout rate (0-1)
+    - `filepath` (default: "data/AAPL_2018-01-01_to_2025-07-01.csv"): Path to CSV data file
   - **Response:** `202 Accepted` (training runs in background)
   - **Mock data available:** Can be called without payload for testing (uses default AAPL data)
   - **Example payload:**
@@ -127,7 +128,8 @@ A complete Postman collection is available in the `docs/` folder for easy API te
       "batch_size": 64,
       "learning_rate": 0.001,
       "hidden_sizes": [256, 128],
-      "dropout": 0.3
+      "dropout": 0.3,
+      "filepath": "data/GOOGL_2018-01-01_to_2025-07-01.csv"
     }
     ```
 
@@ -206,7 +208,8 @@ curl -X POST http://localhost:5000/train \
     "batch_size": 64,
     "learning_rate": 0.001,
     "hidden_sizes": [256, 128],
-    "dropout": 0.3
+    "dropout": 0.3,
+    "filepath": "data/GOOGL_2018-01-01_to_2025-07-01.csv"
   }'
 
 # Start training with default parameters (uses mock data)
