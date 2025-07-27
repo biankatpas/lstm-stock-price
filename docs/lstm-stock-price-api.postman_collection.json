@@ -66,7 +66,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"epochs\": 100,\r\n    \"sequence_length\": 60,\r\n    \"batch_size\": 64,\r\n    \"learning_rate\": 0.001,\r\n    \"hidden_sizes\": [\r\n        256,\r\n        128\r\n    ],\r\n    \"dropout\": 0.3\r\n}",
+					"raw": "{\r\n    \"epochs\": 100,\r\n    \"sequence_length\": 60,\r\n    \"batch_size\": 64,\r\n    \"learning_rate\": 0.001,\r\n    \"hidden_sizes\": [\r\n        256,\r\n        128\r\n    ],\r\n    \"dropout\": 0.3,\r\n    \"filepath\": \"data/GOOGL_2018-01-01_to_2025-07-01.csv\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
