@@ -51,6 +51,27 @@ lstm-stock-price/
         └── training_status.py # Training status management
 ```
 
+## Deployment
+
+### AWS Deployment
+```bash
+# 1. Setup credentials
+cp .env.example .env
+# Edit .env with your AWS Lab credentials
+
+# 2. Deploy container directly to AWS
+./deploy.sh        # Linux/Mac
+deploy.bat         # Windows
+
+# 3. Clean up when done
+docker compose down
+docker context use default
+```
+
+**Your container will be deployed to AWS Fargate!**
+
+See [DEPLOY.md](DEPLOY.md) for detailed instructions.
+
 ## Installation & Setup
 
 ### Docker
