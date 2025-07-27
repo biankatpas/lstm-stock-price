@@ -54,14 +54,3 @@ class YahooFinanceDownloader:
         except Exception as e:
             print(f"Error downloading data for {symbol}: {str(e)}")
             return None
-
-
-if __name__ == "__main__":
-    downloader = YahooFinanceDownloader()
-
-    symbol = "AAPL"
-    data = downloader.run(symbol=symbol, start_date="2018-01-01", end_date="2025-07-01")
-
-    if data is not None:
-        print(f"\nFirst 5 rows of {symbol} data:")
-        print(data.head())

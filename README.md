@@ -16,9 +16,6 @@ lstm-stock-price/
     ├── app.py               # Flask application entry point
     ├── lstm/                # LSTM model implementation
     │   ├── __init__.py
-    │   ├── prepare_features.py
-    │   ├── prepare_sequence.py
-    │   ├── evaluate_lstm.py
     │   └── lstm_stock_price.py    
     ├── routes/              # API routes
     │   └── __init__.py
