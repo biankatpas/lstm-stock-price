@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from flask import Blueprint, jsonify, request
 
-from lstm.lstm_stock_price import LSTMStockPrice
+from lstm.model import LSTMStockPrice
 from mocks.mock_data import generate_mock_stock_data
 from mocks.mock_payload import get_predict_future_mock_payload
 

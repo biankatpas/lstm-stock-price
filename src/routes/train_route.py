@@ -7,7 +7,7 @@ from datetime import datetime
 import pandas as pd
 from flask import Blueprint, jsonify, request
 
-from lstm.lstm_stock_price import LSTMStockPrice
+from lstm.model import LSTMStockPrice
 from mocks.mock_payload import get_train_mock_payload
 from utils.training_status import training_status
 
@@ -49,7 +49,6 @@ def background_training(task_id, params):
         print(f"[{task_id}] Preparing data...")
         X_train, X_val, X_test, y_train, y_val, y_test = model.prepare_data(
             df,
-            test_size=params.get("test_size", 0.3),
             val_size=params.get("val_size", 0.2),
         )
 
